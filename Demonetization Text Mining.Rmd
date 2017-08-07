@@ -18,8 +18,216 @@ As a matter of common file access, we shall keep the source of the file common t
 
 ```{r}
 library(readr)
-demonetization_tweets <- read_csv("~/Data for R/demonetization-tweets.csv")
-attach(demonetization_tweets)
-str(demonetization_tweets)
+DM <- read_csv("~/Data for R/DM.csv")
+attach(DM)
+str(DM)
 ```
+
+```{r}
+DM <- setNames(DM, c(doc_id ="doc_id", text = "contents"))
+DM$contents <-  as.character(DM$contents)
+DM$doc_id <-  as.character(DM$doc_id)
+str(DM)
+
+```
+
+```{r}
+DM <- data.frame(DM)
+library(tm)
+
+
+DM$dmeta1 <- 1:14911
+DM$dmeta2 <- letters[1:14911]
+
+DM_docs <- Corpus(DataframeSource(DM))
+inspect(DM_docs)
+meta(DM_docs)
+```
+
+```{r}
+writeLines(as.character(DM_docs[[100]]))
+
+getTransformations()
+toSpace <- content_transformer(function (x, pattern) {return (gsub(pattern, " ", x))})
+
+DM_docs <- tm_map(DM_docs, toSpace, "-")
+
+DM_docs <- tm_map(DM_docs, toSpace, ":")
+
+DM_docs <- tm_map(DM_docs, removePunctuation)
+
+DM_docs <- tm_map(DM_docs,content_transformer(tolower))
+
+DM_docs <- tm_map(DM_docs, removeNumbers)
+
+DM_docs <- tm_map(DM_docs, removeWords, stopwords("english"))
+
+DM_docs <- tm_map(DM_docs, stripWhitespace)
+```
+
+
+
+```{r}
+#DM_docs <- gsub(pattern = "\\b[https]\\b{5}", replace = " ", DM_docs)
+
+
+# remove http
+
+RemoveURL <- function(x){
+  gsub("http[a-z]*","",x)
+}
+
+DM_docs <- tm_map(DM_docs, content_transformer(RemoveURL))
+```
+
+
+```{r}
+# repeated words ----- not working it can be applied only to list not corpus
+
+#modiCases <- tm_map(DM_docs$content,grep, pattern = "\\<modi")
+#sum(unlist(modiCases))
+
+## count frequency of "miners"
+#minerCases <- tm_map(myCorpusCopy, grep, pattern = "\\<miners")
+#sum(unlist(minerCases))
+
+
+# # replace "miners" with "mining"
+# myCorpus <- tm_map(myCorpus, gsub, pattern = "miners", replacement = "mining")
+
+writeLines(as.character(DM_docs[[100]]))
+
+#install.packages("SnowballC")
+
+library(SnowballC)
+
+#install.packages("textstem")
+library(textstem)
+
+DM_copy <-  DM_docs
+```
+
+```{r}
+# stem document 
+
+DM_docs <- tm_map(DM_docs, stemDocument)
+
+writeLines(as.character(DM_docs[[100]]))
+
+DM_docs <- tm_map(DM_docs, content_transformer(gsub), pattern = 'demonet', replacement = 'demonitization', fixed = T)
+
+str(DM_docs)
+```
+
+```{r}
+# Document Term matrix
+dtm  <- DocumentTermMatrix(DM_docs)
+dtm
+
+inspect(dtm[1:2,11:21])
+```
+
+
+```{r}
+# Mining the corpus
+
+freq_words <- colSums(as.matrix(dtm)) # to know the frequency of the words
+
+length(freq_words) # total no of terms
+```
+
+
+```{r}
+#create sort order (descending)
+ord <- order(freq_words,decreasing=TRUE)
+```
+
+
+```{r}
+#inspect most and least frequently occurring terms
+freq_words[head(ord)]
+freq_words[tail(ord)]
+```
+
+
+
+```{r}
+# removing any additional words by limiting the word length
+dtmr <-DocumentTermMatrix(crimson_docs, control=list(wordLengths=c(4, 20),
+                                                     bounds = list(global = c(1,50))))
+dtmr
+str(dtmr)
+
+
+freqr <- colSums(as.matrix(dtmr))# to know the frequency of the words after removing 
+
+length(freqr)
+```
+
+
+```{r}
+
+#create sort order (asc)
+
+ordr2 <- order(freqr,decreasing=TRUE)
+```
+
+
+```{r}
+#inspect most frequently occurring terms
+
+freqr[head(ordr2)]
+
+freqr[tail(ordr2)]
+
+findFreqTerms(dtmr,lowfreq=2) # to find the terms which appears more than 2 times 
+
+findAssocs(dtmr,'chase',0.2) # to check the correlation between the specific term amd other terms in the corpus
+findAssocs(dtmr,'ancient',0.6)
+```
+
+
+
+```{r}
+# graphics
+
+crimson_graphics =data.frame(term=names(freqr),occurrences=freqr)
+
+library(ggplot2)
+crimson_plot <- ggplot(subset(crimson_graphics, freqr>5), aes(term, occurrences))
+crimson_plot <- crimson_plot + geom_bar(stat='identity')
+crimson_plot <- crimson_plot + theme(axis.text.x=element_text(angle=45, hjust=1))
+crimson_plot
+```
+
+
+
+```{r}
+#wordcloud
+#install.packages("RcolorBrewer")
+library(wordcloud)
+```
+
+
+```{r}
+#setting the same seed each time ensures consistent look across clouds
+set.seed(42)
+```
+
+```{r}
+#limit words by specifying min frequency, word cloud without any colors 
+wordcloud(names(freqr),freqr, min.freq=4)
+```
+
+
+```{r}
+
+# To add colors
+wc <- wordcloud(names(freqr),freqr,min.freq=4,colors=brewer.pal(6,'Dark2'))
+wc <- wordcloud(names(freqr),freqr,min.freq=4,colors=brewer.pal(8,'Dark2'))
+
+```
+
+
+
 
