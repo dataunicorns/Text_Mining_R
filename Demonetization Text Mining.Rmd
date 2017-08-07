@@ -5,10 +5,6 @@ date: "August 6, 2017"
 output: html_document
 ---
 
-<<<<<<< HEAD
-This is the file for the demonetization text mining analysis done as a part of exercising the text mining tools and techniques.
-
-=======
 ##Context##
 
 The demonetization of 500 and 1000 banknotes was a step taken by the Government of India on 8 November 2016, ceasing the usage of all 500 and 1000 banknotes of the Mahatma Gandhi Series as a form of legal tender in India from 9 November 2016.
@@ -20,7 +16,6 @@ This is the file for the demonetization text mining analysis done as a part of e
 
 As a matter of common file access, we shall keep the source of the file common to maintain the consistency of the code.Thus please keep the code in the Documents folder in the sub-folder Data for R. 
 
->>>>>>> bb95b0e0b9e6ae980d0aa12dcc4c69ba9925cd67
 ```{r}
 library(readr)
 demonetization_tweets <- read_csv("~/Data for R/demonetization-tweets.csv")
