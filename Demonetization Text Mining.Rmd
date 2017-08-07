@@ -6,3 +6,8 @@ output: html_document
 ---
 
 This is the file for the demonetization text mining analysis done as a part of exercising the text mining tools and techniques.
+
+```{r}
+
+```
+
