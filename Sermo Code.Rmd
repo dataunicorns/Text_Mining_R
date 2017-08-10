@@ -1,0 +1,298 @@
+---
+title: "Sermo Code"
+author: "Prathyusha"
+date: "August 9, 2017"
+output: html_document
+---
+
+```{r}
+
+
+
+# Importing the data
+
+peanutallergy_corpus <- read.csv("C:\\Users\\prathy.teeyagura\\Desktop\\peanutallergy.csv", header = T, sep=",")
+
+# changing the col names 
+
+peanutallergy_corpus <- setNames(peanutallergy_corpus,c("contents","comments","doc_id","post_id"))
+
+#changing the variables from factors to characters
+
+peanutallergy_corpus <- data.frame(lapply(peanutallergy_corpus, as.character), stringsAsFactors=FALSE)
+
+summary(peanutallergy_corpus)
+
+unique(peanutallergy_corpus$contents) # to get the unique variables 
+
+attach(peanutallergy_corpus)
+
+# Checking the summary of the loaded file
+
+summary(peanutallergy_corpus)
+
+length(unique(peanutallergy_corpus$contents)) # to get the unique variables 
+
+length(unique(peanutallergy_corpus$doc_id))
+
+summary(peanutallergy_corpus$contents)
+
+summary(peanutallergy_corpus$contents)
+
+# To check the duplicate contents 
+
+duplicate_content = duplicated(peanutallergy_corpus$contents)
+
+duplicate_comment = duplicated(peanutallergy_corpus$comments)
+
+summary(duplicate_content)
+
+
+nrow(peanutallergy_corpus)
+
+peanutallergy_corpus$contents[1]
+
+#First we need to define a dataframe where the final array of text will be stored
+
+unified_content=peanutallergy_corpus$contents[1] # Binding the first row first column
+
+unified_content= rbind(unified_content,peanutallergy_corpus$comments[1])# Binding the first row second column
+
+postid= peanutallergy_corpus$post_id[1]
+
+postid=rbind(postid,peanutallergy_corpus$doc_id[1])
+
+
+unified_content #  This is to check the current state of Unified Text Matter
+
+postid
+
+# For loop
+
+for (i in 2:nrow(peanutallergy_corpus)) { # The loop starts from the second row as the first has been binded above
+  if (duplicate_content[i]==FALSE)
+  { # If the content is original, add the content
+    unified_content=rbind(unified_content,peanutallergy_corpus$contents[i]) # adding the content
+    postid=rbind(postid,peanutallergy_corpus$post_id[i])
+    
+    # The next step is to add the comment only if the comment is unique
+    if(duplicate_comment[i]==FALSE)
+    {
+      unified_content=rbind(unified_content,peanutallergy_corpus$comments[i])
+      postid=rbind(postid,peanutallergy_corpus$doc_id[i]) # to bind the doc_id
+    }
+    
+  }else{ # If the content is not unique, we add the comment and doc_id after checking if the comment is unique
+    if(duplicate_comment[i]==FALSE)
+    {
+      unified_content=rbind(unified_content,peanutallergy_corpus$comments[i])
+      postid=rbind(postid,peanutallergy_corpus$doc_id[i])
+    }
+  } # Close of else case
+}# Close of loop
+
+
+#The next two values are used to check if all the content is unique in the whole text data
+
+length(unique(unified_content)) # Check if the unique is equal to the non unique values.
+
+length(unified_content)
+
+str(unified_content)
+summary(unified_content)
+
+
+# The next step is to write the processed Unified text file out from R
+
+#unified_file= cbind(unified_content,postid)
+#unified_file
+
+unified_file <- data.frame(unified_content,postid)
+
+unified_file <- as.data.frame(append(unified_file, 1, after = 3)) 
+
+unified_file <- setNames(unified_file,c("unified_content","postid","code"))
+
+write.csv(unified_file,file = "Unified Text.csv",row.names = FALSE)
+
+# sermo data
+
+sermo <- data.frame(unified_file)
+
+sermo$unified_content <- as.character(sermo$unified_content)
+
+sermo$postid <- as.character(sermo$postid)
+
+sermo$code  <- as.character(sermo$code)
+
+#sermo <- setNames(sermo, c("contents", "doc_id", "code"))
+
+# crimson data
+
+crimson_data <- data.frame(crimson_text_corpus$Contents[1:8891],crimson_text_corpus$doc_id[1:8891])
+
+crimson_data$crimson_text_corpus.doc_id.1.8891. <-as.character(crimson_data$crimson_text_corpus.doc_id.1.8891.)
+
+crimson_data$crimson_text_corpus.Contents.1.8891. <-as.character(crimson_data$crimson_text_corpus.Contents.1.8891.)
+crimson_data
+crimson_data <- setNames(crimson_data, c("contents", "doc_id", "code"))
+
+#combining the data from crimson and sermo
+
+combined_data <- rbind(sermo,crimson_data)
+
+combined_data
+
+summary(combined_data)
+
+#install.packages("tm")
+library(tm)
+combined_df <- data.frame(combined_data[1:10252,1:2])
+combined_df$dmeta1 <- 1:10252
+combined_df$dmeta2 <- letters[1:10252]
+combined_df
+
+# converting data frame to corpus
+
+#install.packages("tm")
+
+library(tm)
+
+combined_corpus <- Corpus(DataframeSource(combined_df))
+
+inspect(combined_corpus)
+
+meta(combined_corpus)
+
+combined_corpus
+
+# to write a get a specific line from the entire corpus
+
+writeLines(as.character(combined_corpus[[14]]))
+
+# transformation steps
+
+getTransformations()
+
+toSpace <- content_transformer(function (x, pattern) {return (gsub(pattern, " ", x))})
+
+combined_corpus <- tm_map(combined_corpus , toSpace, "-") # to remove underscore
+
+combined_corpus <- tm_map(combined_corpus, toSpace, ":") # to remove colon
+
+combined_corpus <- tm_map(combined_corpus, removePunctuation) # to remove punctation marks
+
+combined_corpus <- tm_map(combined_corpus,content_transformer(tolower)) # to lowercase 
+
+# to remove https
+
+RemoveURL <- function(x){
+  gsub("http[a-z]*","",x)
+}
+
+combined_corpus <- tm_map(combined_corpus, content_transformer(RemoveURL))
+
+combined_corpus <- tm_map(combined_corpus, removeNumbers) # to rmove the numbers
+
+combined_corpus <- tm_map(combined_corpus, removeWords, stopwords("english")) # to remove stopwords
+
+combined_corpus <- tm_map(combined_corpus, stripWhitespace) # to rmove the white spaces
+
+writeLines(as.character(combined_corpus[[14]]))
+
+# keeping a copy of corpus for reference
+
+combined_corpuscopy <- combined_corpus
+
+# stemming the document
+
+combined_corpus <- tm_map(combined_corpus, stemDocument)
+
+writeLines(as.character(combined_corpus[[14]]))
+
+writeLines(as.character(combined_corpus[[50]]))
+
+combined_corpus <- tm_map(combined_corpus, content_transformer(gsub), pattern = 'stori', replacement = 'story', fixed = T)
+
+# Document Term matrix
+
+dtm  <- DocumentTermMatrix(combined_corpus)
+
+dtm
+
+inspect(dtm[1:5,10:16])
+
+# Mining the corpus
+
+freq_words <- colSums(as.matrix(dtm)) # to know the frequency of the words
+
+length(freq_words) # total no of terms
+
+#create sort order (descending)
+
+ord <- order(freq_words,decreasing=TRUE)
+
+#inspect most and least frequently occurring terms
+
+freq_words[head(ord)]
+
+freq_words[tail(ord)]
+
+# removing any additional words by limiting the word length
+
+#dtmr <-DocumentTermMatrix(total_docs, control=list(wordLengths=c(4, 20),
+#                                                     bounds = list(global = c(1,50)
+#dtmr
+
+#str(dtmr)
+
+#freqr <- colSums(as.matrix(dtmr))# to know the frequency of the words after removing 
+
+#length(freqr)
+
+#create sort order (asc)
+
+#ordr2 <- order(freqr,decreasing=TRUE)
+
+#inspect most frequently occurring terms
+
+freq_words[head(ord)]
+
+freq_words[tail(ord)]
+
+findFreqTerms(dtm,lowfreq=1000) # to find the terms which appears more than 1000 times 
+
+findAssocs(dtm,'school',0.5) # to check the correlation between the specific term amd other terms in the corpus
+
+findAssocs(dtm,'teacher',0.3)
+
+# graphics
+
+total_graphics =data.frame(term=names(freq_words),occurrences=freq_words)
+
+library(ggplot2)
+
+total_plot <- ggplot(subset(total_graphics, freq_words>1000), aes(term, occurrences))
+total_plot <- total_plot + geom_bar(stat='identity')
+total_plot <- total_plot + theme(axis.text.x=element_text(angle=45, hjust=1))
+total_plot
+
+
+#wordcloud
+
+#install.packages("RcolorBrewer")
+
+library(wordcloud)
+
+#setting the same seed each time ensures consistent look across clouds
+set.seed(42)
+
+#limit words by specifying min frequency, word cloud without any colors 
+wordcloud(names(freq_words),freq_words, min.freq=1000)
+
+# To add colors
+wc <- wordcloud(names(freq_words),freq_words,min.freq=1500,colors=brewer.pal(6,'Dark2'))
+wc <- wordcloud(names(freq_words),freq_words,min.freq=1500,colors=brewer.pal(8,'Dark2'))
+
+```
+
