@@ -9,7 +9,7 @@ output: html_document
 
 # Importing the data
 
-peanutallergy_corpus <- read.csv("C:\\Users\\prathy.teeyagura\\Desktop\\peanutallergy.csv", header = T, sep=",")
+peanutallergy_corpus <- read.csv("C:\\Users\\prathyusha\\Desktop\\peanutallergy.csv", header = T, sep=",")
 
 # changing the col names 
 
@@ -153,7 +153,7 @@ sermo$code  <- as.character(sermo$code)
 
 # crimson data
 
-crimson_data <- data.frame(crimson_text_corpus$Contents[1:8891],crimson_text_corpus$doc_id[1:8891])
+crimson_data <- data.frame(crimson_text_corpus$Contents[1:8891],crimson_text_corpus$doc_id[1:8891], crimson_text_corpus$code[1:8891])
 
 crimson_data$crimson_text_corpus.doc_id.1.8891. <-as.character(crimson_data$crimson_text_corpus.doc_id.1.8891.)
 

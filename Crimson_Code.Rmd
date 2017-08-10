@@ -128,7 +128,7 @@ RemoveURL <- function(x){
 crimson_docs <- tm_map(crimson_docs, content_transformer(RemoveURL))
 ```
 
-```{r, include=FALSE}
+```{r}
 
 
 #install.packages("SnowballC")
