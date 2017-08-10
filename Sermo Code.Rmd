@@ -7,8 +7,6 @@ output: html_document
 
 ```{r}
 
-
-
 # Importing the data
 
 peanutallergy_corpus <- read.csv("C:\\Users\\prathy.teeyagura\\Desktop\\peanutallergy.csv", header = T, sep=",")
@@ -39,6 +37,10 @@ summary(peanutallergy_corpus$contents)
 
 summary(peanutallergy_corpus$contents)
 
+```
+
+```{r}
+
 # To check the duplicate contents 
 
 duplicate_content = duplicated(peanutallergy_corpus$contents)
@@ -46,6 +48,11 @@ duplicate_content = duplicated(peanutallergy_corpus$contents)
 duplicate_comment = duplicated(peanutallergy_corpus$comments)
 
 summary(duplicate_content)
+
+
+```
+
+```{r}
 
 
 nrow(peanutallergy_corpus)
@@ -57,6 +64,11 @@ peanutallergy_corpus$contents[1]
 unified_content=peanutallergy_corpus$contents[1] # Binding the first row first column
 
 unified_content= rbind(unified_content,peanutallergy_corpus$comments[1])# Binding the first row second column
+
+```
+
+```{r}
+
 
 postid= peanutallergy_corpus$post_id[1]
 
@@ -92,6 +104,10 @@ for (i in 2:nrow(peanutallergy_corpus)) { # The loop starts from the second row 
 }# Close of loop
 
 
+```
+
+```{r}
+
 #The next two values are used to check if all the content is unique in the whole text data
 
 length(unique(unified_content)) # Check if the unique is equal to the non unique values.
@@ -115,6 +131,10 @@ unified_file <- setNames(unified_file,c("unified_content","postid","code"))
 
 write.csv(unified_file,file = "Unified Text.csv",row.names = FALSE)
 
+```
+
+```{r}
+
 # sermo data
 
 sermo <- data.frame(unified_file)
@@ -127,6 +147,10 @@ sermo$code  <- as.character(sermo$code)
 
 #sermo <- setNames(sermo, c("contents", "doc_id", "code"))
 
+```
+
+```{r}
+
 # crimson data
 
 crimson_data <- data.frame(crimson_text_corpus$Contents[1:8891],crimson_text_corpus$doc_id[1:8891])
@@ -137,6 +161,7 @@ crimson_data$crimson_text_corpus.Contents.1.8891. <-as.character(crimson_data$cr
 crimson_data
 crimson_data <- setNames(crimson_data, c("contents", "doc_id", "code"))
 
+
 #combining the data from crimson and sermo
 
 combined_data <- rbind(sermo,crimson_data)
@@ -144,6 +169,10 @@ combined_data <- rbind(sermo,crimson_data)
 combined_data
 
 summary(combined_data)
+
+```
+
+```{r}
 
 #install.packages("tm")
 library(tm)
@@ -166,6 +195,11 @@ meta(combined_corpus)
 
 combined_corpus
 
+```
+
+```{r}
+
+
 # to write a get a specific line from the entire corpus
 
 writeLines(as.character(combined_corpus[[14]]))
@@ -173,6 +207,7 @@ writeLines(as.character(combined_corpus[[14]]))
 # transformation steps
 
 getTransformations()
+
 
 toSpace <- content_transformer(function (x, pattern) {return (gsub(pattern, " ", x))})
 
@@ -200,6 +235,10 @@ combined_corpus <- tm_map(combined_corpus, stripWhitespace) # to rmove the white
 
 writeLines(as.character(combined_corpus[[14]]))
 
+```
+
+```{r}
+
 # keeping a copy of corpus for reference
 
 combined_corpuscopy <- combined_corpus
@@ -214,6 +253,10 @@ writeLines(as.character(combined_corpus[[50]]))
 
 combined_corpus <- tm_map(combined_corpus, content_transformer(gsub), pattern = 'stori', replacement = 'story', fixed = T)
 
+```
+
+```{r}
+
 # Document Term matrix
 
 dtm  <- DocumentTermMatrix(combined_corpus)
@@ -221,6 +264,10 @@ dtm  <- DocumentTermMatrix(combined_corpus)
 dtm
 
 inspect(dtm[1:5,10:16])
+
+```
+
+```{r}
 
 # Mining the corpus
 
@@ -237,6 +284,10 @@ ord <- order(freq_words,decreasing=TRUE)
 freq_words[head(ord)]
 
 freq_words[tail(ord)]
+
+```
+
+```{r}
 
 # removing any additional words by limiting the word length
 
@@ -266,6 +317,10 @@ findAssocs(dtm,'school',0.5) # to check the correlation between the specific ter
 
 findAssocs(dtm,'teacher',0.3)
 
+```
+
+```{r}
+
 # graphics
 
 total_graphics =data.frame(term=names(freq_words),occurrences=freq_words)
@@ -276,6 +331,10 @@ total_plot <- ggplot(subset(total_graphics, freq_words>1000), aes(term, occurren
 total_plot <- total_plot + geom_bar(stat='identity')
 total_plot <- total_plot + theme(axis.text.x=element_text(angle=45, hjust=1))
 total_plot
+
+```
+
+```{r}
 
 
 #wordcloud

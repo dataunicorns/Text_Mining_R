@@ -24,6 +24,10 @@ crimson_text_corpus$contents <- as.character(crimson_text_corpus$contents)
 crimson_text_corpus$Post_id <- as.character(crimson_text_corpus$Post_id)
 crimson_text_corpus$Name <- as.character(crimson_text_corpus$Name)
 
+```
+
+```{r}
+
 # To find out the names which starts with Dr
 
 Dr <- grepl("Dr.", crimson_text_corpus$Name)
@@ -52,6 +56,11 @@ summary(crimson_text_corpus$is_doc2)
 
 crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE), 1,0)
 
+```
+
+```{r}
+
+
 #Run after creating ifelse statement
 crimson_text_corpus$code <- as.character(crimson_text_corpus$code)
 
@@ -75,6 +84,11 @@ crimson_docs <- Corpus(DataframeSource(crimson))
 inspect(crimson_docs) # showing error to overcome the error file encoding = latin1 is added at the data importing step
 
 meta(crimson_docs)
+
+```
+
+```{r}
+
 
 #crimson_docs
 library(tm)
@@ -112,6 +126,10 @@ RemoveURL <- function(x){
 }
 
 crimson_docs <- tm_map(crimson_docs, content_transformer(RemoveURL))
+```
+
+```{r}
+
 
 #install.packages("SnowballC")
 
@@ -129,6 +147,11 @@ writeLines(as.character(crimson_docs[[200]]))
 crimson_docs <- tm_map(crimson_docs, content_transformer(gsub), pattern = 'someth', replacement = 'something', fixed = T)
 
 str(crimson_docs)
+
+```
+
+```{r}
+
 
 # Document Term matrix
 dtm  <- DocumentTermMatrix(crimson_docs)
@@ -151,6 +174,11 @@ freq_words[head(ord)]
 
 freq_words[tail(ord)]
 
+```
+
+```{r}
+
+
 # removing any additional words by limiting the word length
 #dtmr <-DocumentTermMatrix(crimson_docs, control=list(wordLengths=c(4, 20),
 #                                                    bounds = list(global = c(1,50))))
@@ -163,6 +191,12 @@ findFreqTerms(dtm,lowfreq=1000) # to find the terms which appears more than 1000
 findAssocs(dtm,'chase',0.5) # to check the correlation between the specific term amd other terms in the corpus
 findAssocs(dtm,'ancient',0.6)
 
+
+```
+
+```{r}
+
+
 # graphics
 
 crimson_graphics =data.frame(term=names(freq_words),occurrences=freq_words)
@@ -173,6 +207,9 @@ crimson_plot <- crimson_plot + geom_bar(stat='identity')
 crimson_plot <- crimson_plot + theme(axis.text.x=element_text(angle=45, hjust=1))
 crimson_plot
 
+```
+
+```{r}
 #wordcloud
 #install.packages("RcolorBrewer")
 library(wordcloud)
