@@ -1,0 +1,160 @@
+---
+title: "Crimson Trials"
+author: "Abhishek Kanaparthi & Prathyasha Teeyagura"
+date: "August 10, 2017"
+output: html_document
+---
+The first step is to import the neccesary libraries into the project setup
+
+```{r, include=FALSE}
+library(readr)
+library(NLP)
+library(tm)
+library(SnowballC)
+library(proxy)
+library(dplyr)
+
+```
+
+The Following set of lines is to take only the crimson data out of the whole raw data.
+
+```{r, include=FALSE}
+crimson_text_corpus <- read.csv("R:/Text Analysis Projects/Prathyusha/Data/cleaned_crimson_data_2.csv", header = T, sep=",")
+summary(crimson_text_corpus)
+
+crimson_text_corpus <- data.frame(crimson_text_corpus$Contents,crimson_text_corpus$doc_id,crimson_text_corpus$Name)
+
+# To asssign a new colum with 0 values
+crimson_text_corpus <- setNames(crimson_text_corpus,c( "contents" ,"Post_id","Name"))
+
+#to convert all the variables into characters 
+crimson_text_corpus <- data.frame(lapply(crimson_text_corpus, as.character), stringsAsFactors=FALSE)
+
+# To find out the names which starts with Dr
+
+Dr <- grepl("Dr.", crimson_text_corpus$Name)
+summary(Dr)
+
+# row number
+find1 <- grep("Dr.", crimson_text_corpus$Name)
+find1
+
+# To print the names
+find <- crimson_text_corpus$Name[grep("Dr.", crimson_text_corpus$Name)]
+find
+
+# to find out the names with Dr. and Dr 
+
+crimson_text_corpus$is_doc <- grepl("Dr\\Q.\\E",crimson_text_corpus$Name) # to know the dr. terms
+
+crimson_text_corpus$is_doc2 <- grepl("Dr\\Q \\E",crimson_text_corpus$Name) # to know the dr terms
+
+summary(crimson_text_corpus$is_doc)
+
+summary(crimson_text_corpus$is_doc2)
+
+#ifelse statement to assign the 0 and 1 values to new code column
+
+crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE), "Doctor","Consumer")
+
+#Run after creating ifelse statement
+crimson_text_corpus$code <- as.character(crimson_text_corpus$code)
+
+# Reference ifelse statement 
+#hcp$IS_GYN <- ifelse(hcp$IS_GYN1 %in% c(TRUE) & hcp$is_texas %in% c(1) & hcp$target_zips %in% 'target' & 
+# hcp$GENDER_CODE_3017 %in% "F", TRUE, FALSE)
+
+#hcp$is_hcp <- ifelse(is_sermo %in% c(TRUE)| is_crimson_and_dr_in_name %in% c(TRUE),1,0)
+
+
+
+crimson_text_corpus <- data.frame(crimson_text_corpus)
+
+# to drop Name, is_doc and is_doc2 columns
+
+crimson_text_corpus <- crimson_text_corpus[,-(3:5),drop=FALSE]
+
+
+
+crimson <- data.frame(crimson_text_corpus)
+```
+
+The final output that we are going to use from the above lines is the crimson data.
+
+```{r}
+TextContent = crimson$contents
+# create term frequency matrix using functions from tm library
+doc_corpus <- Corpus( VectorSource(TextContent) )
+control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+tdm <- TermDocumentMatrix(doc_corpus, control = control_list)
+
+tf <- as.matrix(tdm)
+
+```
+
+The next Step is to Create the Inverse Term frequency Matrix with the above inputs
+```{r}
+# idf
+idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) 
+```
+
+```{r}
+# diagonal matrix
+idf <- diag(idf) 
+
+tf_idf <- crossprod(tf, idf)
+colnames(tf_idf) <- rownames(tf)
+tf_idf
+
+# Note that normalization is computed "row-wise"
+tf_idf / sqrt( rowSums( tf_idf^2 ) )
+
+TextContent
+```
+```{r}
+TextContent = crimson$contents
+
+# 
+# 1. [TFIDF] :
+# @vector = pass in a vector of documents  
+TFIDF <- function(vector) {
+	# tf 
+	news_corpus  <- Corpus( VectorSource(vector) )
+	control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+	tf <- TermDocumentMatrix(news_corpus, control = control_list) %>% as.matrix()
+
+	# idf
+	idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) %>% diag()
+	return( crossprod(tf, idf) )
+}
+
+# tf-idf matrix using news' title 
+tf_idf <- TFIDF(TextContent)
+```
+
+```{r}
+# 2. [Cosine] :
+# distance between two vectors
+Cosine <- function(x, y) {
+	similarity <- sum(x * y) / ( sqrt( sum(y ^ 2) ) * sqrt( sum(x ^ 2) ) )
+
+	# given the cosine value, use acos to convert back to degrees
+	# acos returns the radian, multiply it by 180 and divide by pi to obtain degrees
+	return( acos(similarity) * 180 / pi )
+}
+```
+
+```{r}
+# 3. calculate pair-wise distance matrix 
+pr_DB$set_entry( FUN = Cosine, names = c("Cosine") )
+d1 <- dist(tf_idf, method = "Cosine")
+pr_DB$delete_entry("Cosine")
+```
+
+```{r}
+# 4. heirachical clustering 
+cluster1 <- hclust(d1, method = "ward.D")
+plot(cluster1)
+rect.hclust(cluster1, 17)
+```
+
