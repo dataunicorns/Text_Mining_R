@@ -1,23 +1,22 @@
+# The first step in the whole process is to define all the import statements and libraries so that we do not have errors later on
 
-#importing the data
-crimson_text_corpus <- read.csv("/home/fcbanalytics/Prathy_Practice/cleaned_crimson_data_2.csv", header = T, sep=",",fileEncoding="latin1")
 
-#library(tm)
-#getwd()
-setwd('/home/fcbanalytics/Prathy_Practice')
+library(readr)
+library(NLP)
+library(tm)
+library(SnowballC)
+
+#crimson_text_corpus <- read_csv("R:/Text Analysis Projects/Prathyusha/Data/cleaned_crimson_data_2.csv")
+crimson_text_corpus <- read.csv("R:/Text Analysis Projects/Prathyusha/Data/cleaned_crimson_data_2.csv", header = T, sep=",")
+summary(crimson_text_corpus)
+
 crimson_text_corpus <- data.frame(crimson_text_corpus$Contents,crimson_text_corpus$doc_id,crimson_text_corpus$Name)
 
 # To asssign a new colum with 0 values
-#crimson_text_corpus <- as.data.frame(append(crimson_text_corpus, 0, after = 4))
 crimson_text_corpus <- setNames(crimson_text_corpus,c( "contents" ,"Post_id","Name"))
 
 #to convert all the variables into characters 
 crimson_text_corpus <- data.frame(lapply(crimson_text_corpus, as.character), stringsAsFactors=FALSE)
-
-# or another way to change the variable to character
-#crimson_text_corpus$contents <- as.character(crimson_text_corpus$contents)
-#crimson_text_corpus$Post_id <- as.character(crimson_text_corpus$Post_id)
-#crimson_text_corpus$Name <- as.character(crimson_text_corpus$Name)
 
 # To find out the names which starts with Dr
 
@@ -73,6 +72,8 @@ crimson$dmeta2 <- letters[1:8891]
 # corpus 
 crimson_docs <- Corpus(DataframeSource(crimson))
 
+crimson_docs
+
 inspect(crimson_docs) #showing error to overcome the error file encoding = latin1 is added at the data importing step
 
 meta(crimson_docs)
@@ -109,7 +110,7 @@ crimson_docs <- tm_map(crimson_docs, content_transformer(RemoveURL))
 
 #install.packages("SnowballC")
 
-library(SnowballC)
+
 
 #install.packages("textstem")
 #install.packages('*textstem', dependencies = TRUE)
