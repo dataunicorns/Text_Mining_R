@@ -1,10 +1,11 @@
 
 #importing the data
-crimson_text_corpus <- read.csv("/home/fcbanalytics/Prathy_Practice/cleaned_crimson_data_2.csv", header = T, sep=",",fileEncoding="latin1")
+crimson_text_corpus <- read.csv("C:\\Users\\prathyusha\\Desktop\\cleaned_crimson_data_2.csv", header = T, sep=",")
+
 
 #library(tm)
 #getwd()
-setwd('/home/fcbanalytics/Prathy_Practice')
+#setwd('/home/fcbanalytics/Prathy_Practice')
 crimson_text_corpus <- data.frame(crimson_text_corpus$Contents,crimson_text_corpus$doc_id,crimson_text_corpus$Name)
 
 # To asssign a new colum with 0 values
@@ -64,8 +65,35 @@ crimson_text_corpus <- data.frame(crimson_text_corpus)
 crimson_text_corpus <- crimson_text_corpus[,-(3:5),drop=FALSE]
 
 
-
 crimson <- data.frame(crimson_text_corpus)
+
+TextContent = crimson$contents
+# create term frequency matrix using functions from tm library
+doc_corpus <- Corpus( VectorSource(TextContent) )
+control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+tdm <- TermDocumentMatrix(doc_corpus, control = control_list)
+
+tf <- as.matrix(tdm)
+
+
+#The next Step is to Create the Inverse Term frequency Matrix with the above inputs
+
+# idf
+idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) 
+
+# diagonal matrix
+idf <- diag(idf)
+
+tf_idf <- crossprod(tf, idf)
+colnames(tf_idf) <- rownames(tf)
+tf_idf
+
+
+# Note that normalization is computed "row-wise"
+tf_idf / sqrt( rowSums( tf_idf^2 ) )
+
+TextContent
+
 crimson$dmeta1 <- 1:8891
 crimson$dmeta2 <- letters[1:8891]
 #crimson
@@ -142,7 +170,12 @@ crimson_docs <- tm_map(crimson_docs,removeWords,c("let","that","zwu","zyra","NA"
 
 # Document Term matrix
 
-dtm <- TermDocumentMatrix(crimson_docs)
+corpus <- Corpus(VectorSource(crimson_docs)) # change class 
+matrix_term <- DocumentTermMatrix(corpus)
+
+dtm <- TermDocumentMatrix(matrix_term, control = control_list)
+
+
 
 # To get top 100 most frequent words
 #m <- as.matrix(dtm)

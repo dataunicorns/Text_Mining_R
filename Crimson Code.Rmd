@@ -54,7 +54,7 @@ summary(crimson_text_corpus$is_doc2)
 
 #ifelse statement to assign the 0 and 1 values to new code column (value matching)
 
-crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE), 1,0)
+crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE), "Doctor","consumer")
 
 ```
 
@@ -78,7 +78,80 @@ crimson_text_corpus <- crimson_text_corpus[,-(3:5),drop=FALSE]
 crimson <- data.frame(crimson_text_corpus)
 crimson$dmeta1 <- 1:8891
 crimson$dmeta2 <- letters[1:8891]
-crimson
+View(crimson)
+
+```
+
+
+```{r}
+
+TextContent = crimson$contents
+
+# create term frequency matrix using functions from tm library
+doc_corpus <- Corpus( VectorSource(TextContent) )
+control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+tdm <- TermDocumentMatrix(doc_corpus, control = control_list)
+
+tf <- as.matrix(tdm)
+
+
+#The next Step is to Create the Inverse Term frequency Matrix with the above inputs
+
+# idf
+idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) 
+
+# diagonal matrix
+idf <- diag(idf)
+  
+tf_idf <- crossprod(tf, idf)
+colnames(tf_idf) <- rownames(tf)
+tf_idf
+
+# 
+# 1. [TFIDF] :
+# @vector = pass in a vector of documents  
+TFIDF <- function(vector) {
+	# tf 
+	news_corpus  <- Corpus( VectorSource(vector) )
+	control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+	tf <- TermDocumentMatrix(news_corpus, control = control_list) %>% as.matrix()
+
+	# idf
+	idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) %>% diag()
+	return( crossprod(tf, idf) )
+}
+
+# tf-idf matrix using news' title 
+news_tf_idf <- TFIDF(TextContent)
+```
+
+```{r}
+# 2. [Cosine] :
+# distance between two vectors
+Cosine <- function(x, y) {
+	similarity <- sum(x * y) / ( sqrt( sum(y ^ 2) ) * sqrt( sum(x ^ 2) ) )
+
+	# given the cosine value, use acos to convert back to degrees
+	# acos returns the radian, multiply it by 180 and divide by pi to obtain degrees
+	return( acos(similarity) * 180 / pi )
+}
+```
+
+```{r}
+# 3. calculate pair-wise distance matrix 
+pr_DB$set_entry( FUN = Cosine, names = c("Cosine") )
+d1 <- dist(news_tf_idf, method = "Cosine")
+pr_DB$delete_entry("Cosine")
+```
+
+```{r}
+# 4. heirachical clustering 
+cluster1 <- hclust(d1, method = "ward.D")
+plot(cluster1)
+rect.hclust(cluster1, 17)
+```
+
+```{r}
 crimson_docs <- Corpus(DataframeSource(crimson))
 
 inspect(crimson_docs) # showing error to overcome the error file encoding = latin1 is added at the data importing step
