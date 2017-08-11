@@ -107,6 +107,10 @@ tf_idf <- crossprod(tf, idf)
 colnames(tf_idf) <- rownames(tf)
 tf_idf
 
+# Note that normalization is computed "row-wise"
+tf_idf / sqrt( rowSums( tf_idf^2 ) )
+
+TextContent
 # 
 # 1. [TFIDF] :
 # @vector = pass in a vector of documents  
