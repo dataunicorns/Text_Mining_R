@@ -54,11 +54,7 @@ summary(crimson_text_corpus$is_doc2)
 
 #ifelse statement to assign the 0 and 1 values to new code column (value matching)
 
-<<<<<<< HEAD
 crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE), "Doctor","consumer")
-=======
-crimson_text_corpus$code <- ifelse(crimson_text_corpus$is_doc %in% c(TRUE)| crimson_text_corpus$is_doc2 %in% c(TRUE),"Doctor","Consumer")
->>>>>>> 89762de85e5b12e16421f4c8e65c025ed65146c2
 
 ```
 
@@ -126,7 +122,7 @@ TFIDF <- function(vector) {
 }
 
 # tf-idf matrix using news' title 
-news_tf_idf <- TFIDF(TextContent)
+tf_idf <- TFIDF(TextContent)
 ```
 
 ```{r}
@@ -144,7 +140,7 @@ Cosine <- function(x, y) {
 ```{r}
 # 3. calculate pair-wise distance matrix 
 pr_DB$set_entry( FUN = Cosine, names = c("Cosine") )
-d1 <- dist(news_tf_idf, method = "Cosine")
+d1 <- dist(tf_idf, method = "Cosine")
 pr_DB$delete_entry("Cosine")
 ```
 
