@@ -119,9 +119,9 @@ TextContent = crimson$contents
 # @vector = pass in a vector of documents  
 TFIDF <- function(vector) {
 	# tf 
-	news_corpus  <- Corpus( VectorSource(vector) )
+	corpus  <- Corpus( VectorSource(vector) )
 	control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
-	tf <- TermDocumentMatrix(news_corpus, control = control_list) %>% as.matrix()
+	tf <- TermDocumentMatrix(corpus, control = control_list) %>% as.matrix()
 
 	# idf
 	idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) %>% diag()
