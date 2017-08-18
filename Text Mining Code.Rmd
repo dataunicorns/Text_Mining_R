@@ -8,13 +8,11 @@ output: html_document
 ```{r}
 
 #importing the data
-crimson_text_corpus <- read.csv("C:\\Users\\prathyusha\\Desktop\\cleaned_crimson_data_2.csv", header = T, sep=",")
+crimson_text_corpus <- read.csv("C:\\Users\\Path\\Desktop\\cleaned_crimson_data_2.csv", header = T, sep=",")
 #crimson_text_corpus
 
 library(tm)
 
-#getwd()
-#setwd('/home/fcbanalytics/Prathy_Practice')
 crimson_text_corpus <- data.frame(crimson_text_corpus$doc_id,crimson_text_corpus$Contents,crimson_text_corpus$Name)
 
 # To asssign a new colum with 0 values
